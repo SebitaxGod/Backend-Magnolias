@@ -38,10 +38,19 @@ async function bootstrap() {
     });
   });
 
-  // CORS
+  // CORS - Permitir frontend en Vercel y desarrollo local
+  const allowedOrigins = [
+    'https://frontend-magnolias.vercel.app',
+    'http://localhost:3001',
+    'http://localhost:3000',
+    process.env.FRONTEND_URL, // Variable de entorno adicional
+  ].filter(Boolean); // Eliminar valores undefined
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+    origin: allowedOrigins,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
   // Global validation pipe
