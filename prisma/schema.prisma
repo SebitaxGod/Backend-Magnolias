@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Empresa {
+  id             Int           @id @default(autoincrement())
+  rut            String        @unique @db.VarChar(12)
+  nombre         String        @db.VarChar(150)
+  correo         String        @unique @db.VarChar(150)
+  contrasenaHash String        @db.VarChar(255)
+  descripcion    String?
+  logoUrl        String?       @db.VarChar(255)
+  fechaCreacion  DateTime      @default(now())
+  estado         EstadoEmpresa @default(ACTIVO)
+  cargos         Cargo[]
+
+  @@index([correo])
+  @@index([rut])
+  @@index([estado])
+  @@map("empresas")
+}
+
+model Postulante {
+  id               Int             @id @default(autoincrement())
+  rut              String          @unique @db.VarChar(12)
+  nombre           String          @db.VarChar(150)
+  correo           String          @unique @db.VarChar(150)
+  contrasenaHash   String          @db.VarChar(255)
+  telefono         String?         @db.VarChar(20)
+  cvUrl            String?         @db.VarChar(500)
+  linkedinUrl      String?         @db.VarChar(255)
+  skillsJson       Json?
+  experienciaAnios Int?
+  fechaRegistro    DateTime          @default(now())
+  estado           EstadoPostulante  @default(ACTIVO)
+  postulaciones    Postulacion[]
+
+  @@index([correo])
+  @@index([rut])
+  @@index([estado])
+  @@map("postulantes")
+}
+
+model Cargo {
+  id               Int           @id @default(autoincrement())
+  idEmpresa        Int
+  titulo           String        @db.VarChar(200)
+  descripcion      String
+  tipoContrato     TipoContrato
+  ubicacion        String        @db.VarChar(150)
+  modalidad        Modalidad
+  salarioEstimado  Decimal?      @db.Decimal(12, 2)
+  preguntasJson    Json?
+  requisitos       String?
+  fechaPublicacion DateTime     @default(now())
+  fechaCierre      DateTime?
+  estado           EstadoCargo  @default(ACTIVA)
+  postulaciones    Postulacion[]
+  empresa          Empresa       @relation(fields: [idEmpresa], references: [id], onDelete: Cascade)
+
+  @@index([idEmpresa])
+  @@index([estado])
+  @@index([fechaPublicacion])
+  @@map("cargos")
+}
+
+model Postulacion {
+  id                 Int               @id @default(autoincrement())
+  idPostulante       Int
+  idCargo            Int
+  respuestasJson     Json?
+  puntajeIa          Decimal?          @db.Decimal(5, 2)
+  feedbackIa         String?
+  estado             EstadoPostulacion @default(PENDIENTE)
+  fechaPostulacion   DateTime          @default(now())
+  fechaActualizacion DateTime          @updatedAt
+  postulante         Postulante        @relation(fields: [idPostulante], references: [id], onDelete: Cascade)
+  cargo              Cargo             @relation(fields: [idCargo], references: [id], onDelete: Cascade)
+
+  @@unique([idPostulante, idCargo])
+  @@index([idPostulante])
+  @@index([idCargo])
+  @@index([estado])
+  @@index([fechaPostulacion])
+  @@map("postulaciones")
+}
+
+enum EstadoEmpresa {
+  ACTIVO
+  INACTIVO
+}
+
+enum EstadoPostulante {
+  ACTIVO
+  INACTIVO
+}
+
+enum TipoContrato {
+  FULL_TIME
+  PART_TIME
+  PRACTICA
+  FREELANCE
+}
+
+enum Modalidad {
+  PRESENCIAL
+  REMOTO
+  HIBRIDO
+}
+
+enum EstadoCargo {
+  ACTIVA
+  CERRADA
+  EN_PROCESO
+}
+
+enum EstadoPostulacion {
+  PENDIENTE
+  EVALUADO
+  RECHAZADO
+  SELECCIONADO
+  EN_REVISION
+}

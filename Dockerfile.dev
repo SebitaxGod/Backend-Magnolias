@@ -1,0 +1,23 @@
+FROM node:18-slim
+
+WORKDIR /app
+
+# Instalar OpenSSL para Prisma
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
+# Instalar dependencias
+COPY package*.json ./
+COPY prisma ./prisma/
+
+RUN npm install
+
+# Generar Prisma Client
+RUN npx prisma generate
+
+# Copiar código fuente
+COPY . .
+
+EXPOSE 3000
+
+# Comando para desarrollo con hot reload
+CMD ["npm", "run", "start:dev"]
