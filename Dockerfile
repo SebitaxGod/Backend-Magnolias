@@ -7,8 +7,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Instalar dependencias
-RUN npm ci
+# Instalar dependencias (usar npm install si no hay package-lock.json)
+RUN npm install --production=false
 
 # Copiar código fuente
 COPY . .

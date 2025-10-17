@@ -68,7 +68,7 @@ lerna-debug.log*
 *.tsbuildinfo
 
 # Package manager
-package-lock.json
+# package-lock.json - Comentado para incluirlo en el repo (necesario para Railway)
 yarn.lock
 pnpm-lock.yaml
 
