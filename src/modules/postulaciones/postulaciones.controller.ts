@@ -37,22 +37,6 @@ export class PostulacionesController {
     );
   }
 
-  @Get('vacante/:vacanteId')
-  // @UseGuards(JwtAuthGuard)
-  // @ApiBearerAuth()
-  @ApiOperation({ summary: 'Obtener postulaciones de una vacante' })
-  findByVacante(@Param('vacanteId') vacanteId: string) {
-    return this.postulacionesService.findByVacante(+vacanteId);
-  }
-
-  @Get('candidato/:candidatoId')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Obtener postulaciones de un candidato' })
-  findByCandidato(@Param('candidatoId') candidatoId: string) {
-    return this.postulacionesService.findByCandidato(+candidatoId);
-  }
-
   @Get('postulante/:id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

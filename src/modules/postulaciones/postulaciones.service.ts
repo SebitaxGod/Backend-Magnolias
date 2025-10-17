@@ -173,31 +173,9 @@ export class PostulacionesService {
     }
   }
 
-  async findByVacante(vacanteId: number) {
+  async findByPostulante(postulanteId: number) {
     return this.prisma.postulacion.findMany({
-      where: { idCargo: vacanteId },
-      include: {
-        postulante: {
-          select: {
-            id: true,
-            rut: true,
-            nombre: true,
-            correo: true,
-            telefono: true,
-            cvUrl: true,
-            linkedinUrl: true,
-            skillsJson: true,
-            experienciaAnios: true,
-          },
-        },
-      },
-      orderBy: [{ puntajeIa: 'desc' }, { fechaPostulacion: 'desc' }],
-    });
-  }
-
-  async findByCandidato(candidatoId: number) {
-    return this.prisma.postulacion.findMany({
-      where: { idPostulante: candidatoId },
+      where: { idPostulante: postulanteId },
       include: {
         cargo: {
           include: {
@@ -218,12 +196,6 @@ export class PostulacionesService {
     });
   }
 
-  // Alias para findByCandidato (el frontend espera este nombre)
-  async findByPostulante(postulanteId: number) {
-    return this.findByCandidato(postulanteId);
-  }
-
-  // Obtener postulaciones por cargo (para vista de empresa)
   async findByCargo(cargoId: number) {
     return this.prisma.postulacion.findMany({
       where: { idCargo: cargoId },
