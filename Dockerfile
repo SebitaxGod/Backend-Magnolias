@@ -1,6 +1,9 @@
 # Etapa de construcción
 FROM node:20-alpine AS builder
 
+# Instalar dependencias del sistema para Prisma (OpenSSL 1.1 requerido)
+RUN apk add --no-cache openssl1.1-compat libc6-compat
+
 WORKDIR /app
 
 # Copiar archivos de dependencias
@@ -21,6 +24,9 @@ RUN npm run build
 
 # Etapa de producción
 FROM node:20-alpine
+
+# Instalar dependencias del sistema para Prisma (OpenSSL 1.1 requerido)
+RUN apk add --no-cache openssl1.1-compat libc6-compat
 
 WORKDIR /app
 
