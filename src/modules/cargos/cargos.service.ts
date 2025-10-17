@@ -4,8 +4,8 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { CreateCargoDto } from './dto/create-Cargo.dto';
-import { UpdateCargoDto } from './dto/update-Cargo.dto';
+import { CreateCargoDto } from './dto/create-cargo.dto';
+import { UpdateCargoDto } from './dto/update-cargo.dto';
 
 @Injectable()
 export class CargoService {
