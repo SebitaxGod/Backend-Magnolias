@@ -53,6 +53,24 @@ export class PostulacionesController {
     return this.postulacionesService.findByCandidato(+candidatoId);
   }
 
+  @Get('postulante/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener postulaciones de un postulante' })
+  @ApiResponse({ status: 200, description: 'Lista de postulaciones del postulante' })
+  findByPostulante(@Param('id') postulanteId: string) {
+    return this.postulacionesService.findByPostulante(+postulanteId);
+  }
+
+  @Get('cargo/:cargoId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener postulaciones de un cargo específico' })
+  @ApiResponse({ status: 200, description: 'Lista de postulaciones para el cargo' })
+  findByCargo(@Param('cargoId') cargoId: string) {
+    return this.postulacionesService.findByCargo(+cargoId);
+  }
+
   @Get('empresa/:empresaId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

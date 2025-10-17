@@ -218,6 +218,34 @@ export class PostulacionesService {
     });
   }
 
+  // Alias para findByCandidato (el frontend espera este nombre)
+  async findByPostulante(postulanteId: number) {
+    return this.findByCandidato(postulanteId);
+  }
+
+  // Obtener postulaciones por cargo (para vista de empresa)
+  async findByCargo(cargoId: number) {
+    return this.prisma.postulacion.findMany({
+      where: { idCargo: cargoId },
+      include: {
+        postulante: {
+          select: {
+            id: true,
+            rut: true,
+            nombre: true,
+            correo: true,
+            telefono: true,
+            cvUrl: true,
+            linkedinUrl: true,
+            skillsJson: true,
+            experienciaAnios: true,
+          },
+        },
+      },
+      orderBy: [{ puntajeIa: 'desc' }, { fechaPostulacion: 'desc' }],
+    });
+  }
+
   async findByEmpresa(empresaId: number) {
     return this.prisma.postulacion.findMany({
       where: {
