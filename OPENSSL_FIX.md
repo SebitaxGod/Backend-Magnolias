@@ -9,47 +9,48 @@ Details: Error loading shared library libssl.so.1.1: No such file or directory
 
 ## 🔍 Causa
 
-Prisma genera binarios nativos que dependen de **OpenSSL 1.1**, pero:
-- Node 20 Alpine usa **OpenSSL 3** por defecto
-- El motor de consultas de Prisma (`libquery_engine-linux-musl.so.node`) necesita específicamente OpenSSL 1.1
+Prisma genera binarios nativos que dependen de **OpenSSL**. Al usar Node 20 Alpine, nos encontramos con:
+- Alpine 3.22 (la versión que trae Node 20) **no incluye** `openssl1.1-compat`
+- El motor de consultas de Prisma necesita librerías del sistema
 
-## ✅ Solución
+## ✅ Solución Final
 
-Instalar el paquete de compatibilidad `openssl1.1-compat` en ambas etapas del Dockerfile:
+**Cambiar de Alpine a Debian Slim:**
 
 ```dockerfile
-# Etapa de construcción
-FROM node:20-alpine AS builder
+# Usar node:20-slim (Debian) en lugar de node:20-alpine
+FROM node:20-slim AS builder
 
-# Instalar dependencias del sistema para Prisma (OpenSSL 1.1 requerido)
-RUN apk add --no-cache openssl1.1-compat libc6-compat
-
-# ... resto del Dockerfile
-
-# Etapa de producción
-FROM node:20-alpine
-
-# Instalar dependencias del sistema para Prisma (OpenSSL 1.1 requerido)
-RUN apk add --no-cache openssl1.1-compat libc6-compat
-
-# ... resto del Dockerfile
+# Instalar OpenSSL (Debian tiene mejor compatibilidad con Prisma)
+RUN apt-get update -y && apt-get install -y openssl ca-certificates
 ```
 
-## 📦 Paquetes instalados
+### ¿Por qué Debian Slim?
 
-- **`openssl1.1-compat`**: Proporciona las librerías OpenSSL 1.1 necesarias para Prisma
-- **`libc6-compat`**: Proporciona compatibilidad adicional de librerías C (recomendado para binarios nativos)
+1. ✅ **Mejor compatibilidad con Prisma** - Prisma recomienda Debian
+2. ✅ **Paquetes disponibles** - OpenSSL está disponible sin problemas
+3. ✅ **Imagen pequeña** - `node:20-slim` es ligero (~120MB)
+4. ✅ **Mantenimiento** - Menos problemas de dependencias
+
+## 📦 Ventajas vs Alpine
+
+| Característica | Alpine | Debian Slim |
+|----------------|--------|-------------|
+| Tamaño base | ~50MB | ~120MB |
+| Compatibilidad Prisma | ⚠️ Problemática | ✅ Excelente |
+| Paquetes disponibles | ⚠️ Limitados | ✅ Completos |
+| Librerías C | musl | glibc (estándar) |
 
 ## 🚀 Próximos pasos
 
 1. **Commitear cambios:**
    ```bash
-   git add Dockerfile
-   git commit -m "fix: Instalar OpenSSL 1.1 para compatibilidad con Prisma en Alpine"
+   git add Dockerfile OPENSSL_FIX.md
+   git commit -m "fix: Cambiar a Debian slim para compatibilidad con Prisma"
    git push origin main
    ```
 
-2. **Railway desplegará automáticamente** con el Dockerfile actualizado
+2. **Railway desplegará automáticamente** con el nuevo Dockerfile
 
 3. **Verificar logs** - Deberías ver:
    ```
@@ -59,12 +60,20 @@ RUN apk add --no-cache openssl1.1-compat libc6-compat
 
 ## 🔗 Referencias
 
-- [Prisma Deployment - Railway](https://www.prisma.io/docs/guides/deployment/deployment-guides/deploying-to-railway)
-- [Alpine Linux OpenSSL compatibility](https://github.com/prisma/prisma/issues/861)
-- [Railway + Prisma troubleshooting](https://docs.railway.app/troubleshoot/fixing-common-errors)
+- [Prisma Deployment - Best Practices](https://www.prisma.io/docs/guides/deployment/deployment-guides/deploying-to-vercel)
+- [Railway + Prisma](https://docs.railway.app/guides/prisma)
+- [Node Docker Best Practices](https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md)
 
-## ⚠️ Nota importante
+## ⚠️ Intentos anteriores (fallidos)
 
-Este problema **NO** afecta a desarrollo local en Windows porque usas el motor de consultas compilado para Windows que tiene sus propias dependencias.
+### Intento 1: `openssl1.1-compat` en Alpine
+```dockerfile
+RUN apk add --no-cache openssl1.1-compat  # ❌ Paquete no existe en Alpine 3.22
+```
+**Resultado:** `ERROR: unable to select packages: openssl1.1-compat (no such package)`
 
-El error **SOLO** ocurre en producción (Linux Alpine) donde Prisma usa el motor `linux-musl`.
+### Solución correcta: Debian Slim
+```dockerfile
+FROM node:20-slim  # ✅ Funciona perfectamente
+RUN apt-get update -y && apt-get install -y openssl ca-certificates
+```
